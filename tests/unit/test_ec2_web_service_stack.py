@@ -19,3 +19,11 @@ class TestWebServerEc2Stack(unittest.TestCase):
         })
         template.resource_count_is('AWS::EC2::VPC', 1)
         template.resource_count_is('AWS::EC2::NatGateway', 0)
+
+    
+    def test_private_subnet_created(self):
+        # Assertion to verify if a private subnet was created within the VPC
+        template = assertions.Template.from_stack(self.stack)
+        template.has_resource_properties('AWS::EC2::Subnet', {
+        'MapPublicIpOnLaunch': False,   #Ensuring it is a private subnet
+    })
