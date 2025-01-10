@@ -3,7 +3,7 @@ from aws_cdk import App, assertions
 from aws_cdk import aws_ec2 as ec2
 from ec2_web_service.ec2_web_service_stack import Ec2WebServiceStack
 
-class TestWebServerEc2Stack(unittest.TestCase):
+class TestEc2WebServiceStack(unittest.TestCase):
 
     def setUp(self):
         # Initialize the CDK app and stack
@@ -16,11 +16,10 @@ class TestWebServerEc2Stack(unittest.TestCase):
         template.has_resource_properties('AWS::EC2::VPC', {
             'EnableDnsSupport': True,
             'EnableDnsHostnames': True,
-        })
+    })
         template.resource_count_is('AWS::EC2::VPC', 1)
         template.resource_count_is('AWS::EC2::NatGateway', 0)
 
-    
     def test_private_subnet_created(self):
         # Assertion to verify if a private subnet was created within the VPC
         template = assertions.Template.from_stack(self.stack)
@@ -69,3 +68,16 @@ class TestWebServerEc2Stack(unittest.TestCase):
                 }
         ])
     })
+
+    def test_ec2_instance_created(self):
+        # Assertion to verify if the EC2 instance is created with the correct instance type and image
+        template = assertions.Template.from_stack(self.stack)
+
+        template.has_resource_properties('AWS::EC2::Instance', {
+            'InstanceType': assertions.Match.string_like_regexp('(t2|t3).micro'),
+            'ImageId': assertions.Match.any_value(),
+            'KeyName': 'Web-Service-EC2',
+    })
+
+if __name__ == '__main__':
+    unittest.main()

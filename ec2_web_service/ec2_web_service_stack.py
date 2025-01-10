@@ -55,9 +55,29 @@ class Ec2WebServiceStack(Stack):
 
         #Use an existing key-pair for the EC2 instance 
         #Access to the instance can be managed via SSM without SSH access, however keeping this for debugging flexibility using SSH
-        ec2.KeyPair.from_key_pair_attributes(self, 'KeyPair',
-                                            key_pair_name='Web-Service-EC2',
-                                            type=ec2.KeyPairType.RSA)
+        webservice_key_pair =  ec2.KeyPair.from_key_pair_attributes(self, 'KeyPair',
+                                                                    key_pair_name='Web-Service-EC2',
+                                                                    type=ec2.KeyPairType.RSA)
+        
+        #create an EC2 instance with vpc, subnet, security group, Iam role and key pair
+        ec2_instance = ec2.Instance(self, 'WebServiceInstance',
+                                    instance_type=ec2.InstanceType.of(instance_class=ec2.InstanceClass.T2,
+                                                                    instance_size=ec2.InstanceSize.MICRO),
+                                    machine_image=ec2.MachineImage.latest_amazon_linux2(),
+                                    vpc=webservice_vpc,
+                                    security_group=ec2_security_group,
+                                    key_pair=webservice_key_pair,
+                                    user_data_causes_replacement=False)
+        
+        # user data for bootstrapping and downloading dependencies at the time of launching the instance
+        # An example of user data is shown below
+        ec2_instance.add_user_data(
+            '#!/bin/bash',
+            'sudo yum update -y',
+            'sudo yum install -y httpd',
+            'sudo systemctl start httpd',
+            'sudo systemctl enable httpd'
+        )
                                                                                             
         
 
