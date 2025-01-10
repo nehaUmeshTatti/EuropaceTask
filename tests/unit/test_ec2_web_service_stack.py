@@ -8,7 +8,7 @@ class TestWebServerEc2Stack(unittest.TestCase):
     def setUp(self):
         # Initialize the CDK app and stack
         self.app = App()
-        self.stack = Ec2WebServiceStack(self.app, "TestStack")
+        self.stack = Ec2WebServiceStack(self.app, 'TestStack')
 
     def test_vpc_created(self):
         # Assertion to verify VPC creation as expected
@@ -26,4 +26,27 @@ class TestWebServerEc2Stack(unittest.TestCase):
         template = assertions.Template.from_stack(self.stack)
         template.has_resource_properties('AWS::EC2::Subnet', {
         'MapPublicIpOnLaunch': False,   #Ensuring it is a private subnet
+    })
+    
+    def test_security_group_created(self):
+        # Assertion to check if the rules in the security group is created as expected
+        template = assertions.Template.from_stack(self.stack)
+
+        template.has_resource_properties('AWS::EC2::SecurityGroup', {
+            'SecurityGroupIngress': assertions.Match.array_with([
+                assertions.Match.object_like({
+                    'CidrIp': '10.0.0.0/16',
+                    'Description': 'Allow SSH traffic within VPC',
+                    'FromPort': 22,
+                    'IpProtocol': 'tcp',
+                    'ToPort': 22    
+                }),
+                assertions.Match.object_like({
+                    'CidrIp': '10.0.0.0/16',
+                    'Description': 'Allow HTTPs traffic within VPC',
+                    'FromPort': 443,
+                    'IpProtocol': 'tcp',
+                    'ToPort': 443
+                })
+        ])
     })
