@@ -78,6 +78,22 @@ class TestEc2WebServiceStack(unittest.TestCase):
             'ImageId': assertions.Match.any_value(),
             'KeyName': 'Web-Service-EC2',
     })
+    
+    def test_s3_bucket_created(self):
+        # Assertion to verify S3 bucket creation with the expected properties
+        template = assertions.Template.from_stack(self.stack)
+        
+        template.has_resource_properties('AWS::S3::Bucket', {
+            'PublicAccessBlockConfiguration': assertions.Match.object_like({
+                    'BlockPublicAcls': True,
+                    'BlockPublicPolicy': True,
+                    'RestrictPublicBuckets': True,
+                    'IgnorePublicAcls': True 
+                }),
+            'VersioningConfiguration': assertions.Match.object_like({
+                    'Status': 'Enabled'
+            })
+        })
 
 if __name__ == '__main__':
     unittest.main()

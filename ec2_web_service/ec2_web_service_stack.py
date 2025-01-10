@@ -1,7 +1,9 @@
 from aws_cdk import (
     Stack,
     aws_ec2 as ec2,
-    aws_iam as iam
+    aws_iam as iam,
+    aws_s3 as s3,
+    RemovalPolicy
 )
 from constructs import Construct
 
@@ -78,6 +80,14 @@ class Ec2WebServiceStack(Stack):
             'sudo systemctl start httpd',
             'sudo systemctl enable httpd'
         )
+
+        # Create S3 bucket and grant access to the IAM role used by EC2, incase the webservice needs a S3 bucket
+        webservice_s3_bucket = s3.Bucket(self, 'WebServiceBucket', 
+                                         block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+                                         encryption=s3.BucketEncryption.S3_MANAGED,
+                                         versioned=True,
+                                         removal_policy=RemovalPolicy.RETAIN)
+        webservice_s3_bucket.grant_read_write(ec2_iam_role)
                                                                                             
         
 
