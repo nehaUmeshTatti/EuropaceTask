@@ -50,3 +50,22 @@ class TestWebServerEc2Stack(unittest.TestCase):
                 })
         ])
     })
+    
+    def test_iam_role_with_managed_policy(self):
+        # Assertion to check if the IAM role has the AmazonSSMManagedInstanceCore policy attached
+        template = assertions.Template.from_stack(self.stack)
+
+        template.has_resource_properties('AWS::IAM::Role', {
+            'ManagedPolicyArns': assertions.Match.array_with([
+                {
+                    'Fn::Join': [
+                        '',
+                        [
+                            'arn:',
+                            {'Ref': 'AWS::Partition'},
+                            ':iam::aws:policy/AmazonSSMManagedInstanceCore'
+                        ]
+                    ]
+                }
+        ])
+    })
