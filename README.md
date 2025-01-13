@@ -75,6 +75,7 @@ cdk destroy
 ### 4. **Run Unit Tests**
 - Run the following command to run the unit tests
 ```bash
+pip install -r requirements-dev.txt
 pytest
 ```
 
